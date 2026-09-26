@@ -1,13 +1,30 @@
 import urllib.parse
+import requests
 import streamlit as st
-from googletrans import Translator
 
 st.set_page_config(page_title="아기자기 OC 캐릭터 생성기", page_icon="🎨")
 st.title("🎨 OC 캐릭터 일러스트 생성기")
 st.caption("캐릭터 설정을 입력하시면 무료 AI가 아기자기한 동화풍 일러스트로 그려드려요!")
 
-# 번역기 객체 생성
-translator = Translator()
+# 구글 번역 함수 (무료 API 직접 호출 방식)
+def translate_to_english(text):
+    try:
+        url = "https://translate.googleapis.com/translate_a/single"
+        params = {
+            "client": "gtx",
+            "sl": "ko",
+            "tl": "en",
+            "dt": "t",
+            "q": text
+        }
+        response = requests.get(url, params=params, timeout=5)
+        if response.status_code == 200:
+            result = response.json()
+            translated_text = "".join([item[0] for item in result[0] if item[0]])
+            return translated_text
+    except Exception:
+        pass
+    return text  # 번역 실패 시 원본 입력값 반환
 
 user_description = st.text_area(
     "캐릭터 설정을 입력하세요", 
@@ -21,9 +38,8 @@ if st.button("그림 그리기 ✨", type="primary"):
     else:
         with st.spinner("아기자기한 화풍으로 캐릭터를 그리고 있어요... 🎨"):
             try:
-                # 1. 한국어 설명을 영문으로 안전하게 자동 번역
-                translated_obj = translator.translate(user_description, src='ko', dest='en')
-                english_desc = translated_obj.text
+                # 1. 한국어 설정을 영문으로 안전하게 자동 번역
+                english_desc = translate_to_english(user_description)
                 
                 # 2. 동화풍 스타일 프롬프트 조합
                 full_prompt = (
