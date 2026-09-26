@@ -1,6 +1,5 @@
 import urllib.parse
 import streamlit as st
-from deep_translator import GoogleTranslator
 
 st.set_page_config(page_title="아기자기 OC 캐릭터 생성기", page_icon="🎨")
 st.title("🎨 OC 캐릭터 일러스트 생성기")
@@ -18,20 +17,20 @@ if st.button("그림 그리기 ✨", type="primary"):
     else:
         with st.spinner("아기자기한 화풍으로 캐릭터를 그리고 있어요... 🎨"):
             try:
-                # 1. 한국어 설정을 영문으로 무료 자동 번역
-                translated_desc = GoogleTranslator(source='ko', target='en').translate(user_description)
-                
-                # 2. 동화풍 스타일 프롬프트 조합
-                prompt = (
-                    f"{translated_desc}, cute cozy storybook illustration, "
+                # 스타일 프롬프트 및 입력 문자열 구성
+                full_prompt = (
+                    f"{user_description}, cute cozy storybook illustration, "
                     "soft line art, warm pastel color palette, soft watercolor texture, "
                     "intricate small details, masterpiece, high quality"
                 )
                 
-                # 3. Pollinations.ai 무료 이미지 URL 생성
-                encoded_prompt = urllib.parse.quote(prompt)
-                # 시드값을 무작위화하기 위해 유저 입력 길이 기반 간단 식별값 추가
-                seed_val = len(user_description) * 7 + 123
+                # 안전한 URL 인코딩 처리
+                encoded_prompt = urllib.parse.quote(full_prompt)
+                
+                # 입력마다 결과가 조금씩 바뀌도록 고유 시드값 부여
+                seed_val = abs(hash(user_description)) % 100000
+                
+                # Pollinations.ai 무료 이미지 생성 URL
                 image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed_val}&nologo=true"
                 
                 st.success("완성되었습니다!")
